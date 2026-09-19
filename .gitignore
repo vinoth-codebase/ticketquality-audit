@@ -1,0 +1,70 @@
+# ---- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ---- Virtual environments -------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ---- Testing / coverage ---------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+*.cover
+
+# ---- Type checkers / linters ---------------------------------------------
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+.bandit
+
+# ---- Notebooks ------------------------------------------------------------
+.ipynb_checkpoints/
+
+# ---- Data & model artefacts ----------------------------------------------
+data/raw/
+data/processed/
+data/*.csv
+!examples/sample_tickets.csv
+artifacts/
+*.joblib
+*.pkl
+*.onnx
+
+# ---- Streamlit ------------------------------------------------------------
+.streamlit/secrets.toml
+
+# ---- Editors / OS ---------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Logs -----------------------------------------------------------------
+*.log
+logs/
