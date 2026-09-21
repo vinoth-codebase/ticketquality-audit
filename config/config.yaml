@@ -1,0 +1,80 @@
+# TicketQuality-Audit :: master configuration
+# All paths are resolved relative to the project root unless absolute.
+
+project:
+  name: ticketquality-audit
+  version: 1.0.0
+  random_seed: 42
+
+paths:
+  data_dir: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  artifacts_dir: artifacts
+  model_path: artifacts/reopen_risk_model.joblib
+  metrics_path: artifacts/model_metrics.json
+  examples_dir: examples
+
+data:
+  # UCI Machine Learning Repository :: Incident Management Process Enriched Event Log
+  uci_dataset_id: 498
+  uci_dataset_url: https://archive.ics.uci.edu/static/public/498/incident+management+process+enriched+event+log.zip
+  archive_name: incident_management_process_enriched_event_log.zip
+  # Ticket lifecycle events extracted from the enriched log
+  event_log_file: Incident_event_log.csv
+  incident_file: Incident.csv
+  # States considered terminal (ticket has left the active resolution workflow)
+  terminal_states:
+    - Resolved
+    - Closed
+  # States considered intermediate triage queues for dwell-time modelling
+  triage_states:
+    - New
+    - Assigned
+    - In Progress
+    - Awaiting Vendor
+    - Awaiting User
+  synthetic_samples: 1000
+
+features:
+  # Minimum active resolution time (minutes) used as the denominator for velocity
+  # metrics. Guards against divide-by-zero on instant closures.
+  min_active_minutes: 1.0
+  caller_min_history: 2
+  high_cardinality_threshold: 10
+  numeric_features:
+    - reassignment_count
+    - sys_mod_count
+    - resolution_minutes
+    - active_minutes
+    - assignment_group_dwell
+    - reassignment_rate
+    - modification_density
+    - caller_reopen_rate
+    - priority_mismatch_index
+    - handle_time
+    - interaction_count
+  categorical_features:
+    - priority
+    - impact
+    - urgency
+    - category
+    - assignment_group
+    - contact_type
+    - shift
+    - made_sla
+
+model:
+  target: is_premature_closure
+  test_size: 0.25
+  validation_size: 0.2
+  recall_floor: 0.80
+  recall_margin: 0.10
+  threshold_grid_size: 99
+  params_file: config/model_params.yaml
+
+dashboard:
+  page_title: TicketQuality-Audit | Premature Closure Forecaster
+  # null => derive LOW / ELEVATED boundaries from the tuned decision threshold
+  risk_low_upper: null
+  risk_elevated_upper: null

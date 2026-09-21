@@ -1,0 +1,40 @@
+# TicketQuality-Audit :: model hyper-parameters
+# Consumed by ticketquality.models.classifier.ReopenRiskClassifier.
+# `backend: auto` prefers LightGBM and transparently falls back to the
+# scikit-learn HistGradientBoosting implementation when the native
+# LightGBM shared library is unavailable.
+
+backend: auto
+
+lightgbm:
+  objective: binary
+  boosting_type: gbdt
+  n_estimators: 150
+  learning_rate: 0.03
+  num_leaves: 15
+  max_depth: -1
+  min_child_samples: 80
+  subsample: 0.85
+  subsample_freq: 1
+  colsample_bytree: 0.85
+  reg_alpha: 0.50
+  reg_lambda: 5.00
+  class_weight: balanced
+  n_jobs: -1
+  verbosity: -1
+  random_state: 42
+
+sklearn_fallback:
+  loss: log_loss
+  learning_rate: 0.05
+  max_iter: 250
+  max_leaf_nodes: 15
+  min_samples_leaf: 50
+  l2_regularization: 2.0
+  max_bins: 255
+  early_stopping: false
+  random_state: 42
+
+calibration:
+  method: sigmoid
+  cv: 3
