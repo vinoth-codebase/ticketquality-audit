@@ -1,0 +1,81 @@
+# TicketQuality-Audit — local orchestration
+#
+#   docker compose up            # dashboard on http://localhost:8501
+#   docker compose run --rm cli train --data data/synthetic_tickets.csv
+#   docker compose run --rm cli audit --file examples/sample_tickets.csv
+#
+# The `cli` service reuses the same image and simply overrides the entry
+# command, so there is a single artefact to build and ship.
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ticketquality-audit:1.0.0
+    container_name: ticketquality-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      TICKETQUALITY_CONFIG: /app/config/config.yaml
+      TICKETQUALITY_DATASET: /app/data/synthetic_tickets.csv
+      TICKETQUALITY_PARAMS: /app/config/model_params.yaml
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./examples:/app/examples:ro
+    command:
+      - streamlit
+      - run
+      - src/ticketquality/dashboard/app.py
+      - --server.port=8501
+      - --server.address=0.0.0.0
+      - --server.headless=true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import ticketquality"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ticketquality-audit:1.0.0
+    container_name: ticketquality-cli
+    environment:
+      TICKETQUALITY_CONFIG: /app/config/config.yaml
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./examples:/app/examples
+    entrypoint: ["ticketquality"]
+    command: ["info"]
+    profiles: ["cli"]
+
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ticketquality-audit:1.0.0
+    container_name: ticketquality-trainer
+    environment:
+      TICKETQUALITY_CONFIG: /app/config/config.yaml
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+    entrypoint:
+      - /bin/bash
+      - -lc
+    command:
+      - >-
+        python scripts/generate_audit_dataset.py --samples 1000
+        --output data/synthetic_tickets.csv &&
+        ticketquality train --data data/synthetic_tickets.csv
+        --report-out artifacts/model_metrics.json
+    profiles: ["train"]
+
+volumes:
+  artifacts: {}
